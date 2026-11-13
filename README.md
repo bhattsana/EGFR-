@@ -1,357 +1,298 @@
-🧬 AI-Driven Molecular Screening for EGFR Inhibitors
+# 🧬 EGFR Molecular Research Platform
 
-An AI-powered drug discovery pipeline for screening and prioritizing potential EGFR (Epidermal Growth Factor Receptor) inhibitors for early-stage Non-Small Cell Lung Cancer (NSCLC) research.
+An AI-driven molecular research platform for exploring and prioritizing potential EGFR inhibitor candidates for early-stage computational research in Non-Small Cell Lung Cancer (NSCLC).
 
-The project combines cheminformatics, machine learning, toxicity prediction, synthetic accessibility, and explainable AI to rank promising molecules before expensive laboratory validation.
+The platform combines cheminformatics, molecular visualization and machine-learning-based potency estimation to help researchers inspect molecular structures and compare candidate compounds.
 
-🚀 Project Overview
+**🌐 Live Demo:** https://egfr-three.vercel.app  
+**💻 GitHub Repository:** https://github.com/bhattsana/EGFR
 
-Drug discovery is expensive and time-consuming, especially when thousands of candidate molecules need to be evaluated.
+---
 
-This project provides an end-to-end computational screening pipeline that takes molecular SMILES as input and evaluates candidates across multiple dimensions:
+## 🚀 Project Overview
 
-🧪 Predicted anti-EGFR efficacy
+Drug discovery involves evaluating large numbers of molecular structures before experimental validation. Computational tools can help researchers analyze molecular properties and prioritize compounds for further investigation.
 
-☠️ Predicted toxicity
+The EGFR Molecular Research Platform provides an interactive workflow where users can submit molecular structures using SMILES notation and explore their molecular properties and model predictions.
 
-⚗️ Synthetic accessibility
+### Key capabilities
 
-📊 Overall candidate ranking
+- SMILES-based molecular structure input and validation
+- Molecular descriptor calculation using RDKit
+- Interactive 2D molecular structure visualization
+- Interactive 3D molecular visualization
+- Machine-learning-based wild-type EGFR IC50 estimation
+- Empirical prediction uncertainty intervals
+- Applicability-domain assessment
+- Nearest training-neighbor information
+- Multi-candidate molecular analysis and ranking
 
-🔍 Explainability of model predictions
+---
 
-📈 Interactive visualization/dashboard support
+## 🎯 Problem Statement
 
-The goal is to help researchers quickly identify promising compounds for further investigation.
+EGFR (Epidermal Growth Factor Receptor) is an important therapeutic target in several cancers, including subsets of NSCLC.
 
-🎯 Problem Statement
+Although EGFR-targeted therapies such as Gefitinib, Erlotinib and Osimertinib have demonstrated clinical value, acquired resistance and treatment-related toxicity remain important challenges.
 
-EGFR is an important therapeutic target in NSCLC. Although drugs such as Gefitinib, Erlotinib, and Osimertinib have demonstrated clinical value, resistance and toxicity remain major challenges.
+This project explores how cheminformatics and machine learning can support early-stage computational investigation by analyzing molecular structures and estimating their potential wild-type EGFR inhibitory potency.
 
-Traditional screening methods require substantial time, resources, and laboratory experimentation.
+The platform is designed as a research-support tool, not as a replacement for laboratory experiments or clinical evaluation.
 
-This project addresses the problem by using machine learning + molecular fingerprints + cheminformatics to computationally prioritize candidate EGFR inhibitors.
+---
 
-🧠 How It Works
+## 🧠 How the Platform Works
 
-Molecular SMILES
-       │
-       ▼
-┌─────────────────────┐
-│ Molecular Processing│
-│      (RDKit)        │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│ Morgan Fingerprints │
-│      2048-bit       │
-└──────────┬──────────┘
-           │
-      ┌────┴─────┐
-      ▼          ▼
-┌───────────┐ ┌─────────────┐
-│ XGBoost   │ │ Random      │
-│ Efficacy  │ │ Forest      │
-│ Prediction│ │ Toxicity    │
-└─────┬─────┘ └──────┬──────┘
-      │              │
-      └──────┬───────┘
-             ▼
-   ┌──────────────────┐
-   │ Synthetic        │
-   │ Accessibility    │
-   │ (RDKit SA Score) │
-   └────────┬─────────┘
-            │
-            ▼
-   ┌──────────────────┐
-   │ Composite Ranking│
-   └────────┬─────────┘
-            │
-            ▼
-   ┌──────────────────┐
-   │ Explainability & │
-   │ Visualization    │
-   └──────────────────┘
+1. **Molecular input:** The user submits a molecular structure in SMILES notation.
+2. **Structure validation:** RDKit parses and validates the molecular representation.
+3. **Molecular analysis:** The platform calculates molecular descriptors and generates molecular structure representations.
+4. **Visualization:** The submitted molecule can be explored through 2D and interactive 3D views.
+5. **Model inference:** The trained model estimates wild-type EGFR IC50 and reports the corresponding pIC50 output.
+6. **Uncertainty assessment:** An empirical prediction interval is displayed alongside the model estimate.
+7. **Applicability-domain assessment:** Structural similarity to training compounds is evaluated to communicate limitations of model applicability.
+8. **Candidate comparison:** Multiple molecular structures can be analyzed and ranked using their predicted pIC50 values.
 
-🔬 Core Methodology
+---
 
-1. Molecular Input
+## 🔬 Core Features
 
-Candidate compounds are represented using SMILES (Simplified Molecular Input Line Entry System).
+### 1. Molecular Structure Analysis
+
+Users can submit molecules using SMILES (Simplified Molecular Input Line Entry System).
 
 Example:
 
-CCOc1ccc2nc(S(N)(=O)=O)sc2c1
+```text
+CCO
+```
 
-2. Molecular Processing
+The platform validates the molecular structure and calculates descriptors such as:
 
-RDKit is used to:
+- Molecular weight
+- Crippen LogP
+- Topological Polar Surface Area (TPSA)
+- Hydrogen-bond donors
+- Hydrogen-bond acceptors
 
-Parse SMILES
+### 2. Interactive Molecular Visualization
 
-Validate molecules
+The platform provides:
 
-Calculate molecular descriptors
+- 2D molecular structure rendering
+- Interactive 3D molecular visualization
+- Camera rotation and zoom controls
+- 2D/3D view switching
+- Molecular structure inspection
 
-Generate molecular fingerprints
+### 3. Machine Learning-Based Potency Estimation
 
-Estimate synthetic accessibility
+A trained machine-learning model estimates wild-type EGFR IC50.
 
-3. Morgan Fingerprints
+The prediction is presented in pIC50 units, alongside an empirical uncertainty interval.
 
-Each molecule is converted into a 2048-bit Morgan fingerprint.
+Higher pIC50 values correspond to lower estimated IC50 values.
 
-These fingerprints represent structural features of molecules in a machine-learning-friendly numerical format.
+**Important:** These are exploratory computational estimates, not experimentally confirmed biological measurements.
 
-4. Efficacy Prediction
+### 4. Applicability-Domain Assessment
 
-An XGBoost model is used to estimate the potential efficacy/activity of candidate molecules against EGFR.
+A molecular prediction may be less reliable when the submitted structure differs significantly from the compounds used to train the model.
 
-5. Toxicity Prediction
+The platform provides:
 
-A Random Forest model estimates potential toxicity risk.
+- Nearest training-neighbor information
+- Structural similarity assessment
+- Applicability-domain warnings
 
-This allows candidates to be evaluated not only for activity but also for safety-related characteristics.
+These indicators help users understand when a molecule may be outside the model's calibration similarity range.
 
-6. Synthetic Accessibility
+### 5. Candidate Ranking
 
-The pipeline calculates a Synthetic Accessibility (SA) score to estimate how difficult a molecule may be to synthesize.
+Users can submit multiple SMILES strings for comparative analysis.
 
-This helps prevent the ranking of highly active compounds that are impractical to produce.
+The platform:
 
-7. Composite Ranking
+- Analyzes individual candidates
+- Displays molecular structures and descriptors
+- Shows model predictions when available
+- Displays empirical intervals and applicability-domain information
+- Sorts candidates by predicted pIC50
 
-The different predictions are combined into an overall candidate score.
+Ranking represents model-based prioritization, not proof of biological activity or a statistically established potency difference.
 
-A conceptual ranking can consider:
+---
 
-High efficacy
-      +
-Low toxicity
-      +
-Good synthetic accessibility
-      =
-Higher-priority candidate
+## 📊 Model Evaluation
 
-8. Explainability
+The current model evaluation includes held-out scaffold testing.
 
-Model outputs can be analyzed to understand which molecular features contribute to predictions, making the screening process more interpretable.
+| Evaluation metric | Reported result |
+|---|---:|
+| Held-out scaffold test MAE | 0.70 pIC50 |
+| Held-out scaffold test RMSE | 0.91 pIC50 |
+| Held-out scaffold test R² | 0.52 |
+| Nominal 90% interval test coverage | 83.9% |
+| ChEMBL release | ChEMBL 37 |
 
-🛠️ Tech Stack
+The nominal 90% interval achieved 83.9% empirical coverage on the reported test set. Therefore, it should not be interpreted as a guaranteed 90% confidence interval.
 
-Technology
+Model performance and applicability limitations should be considered when interpreting individual predictions.
 
-Purpose
+---
 
-Python
+## 🛠️ Technology Stack
 
-Core development
+| Technology | Purpose |
+|---|---|
+| Python | Backend and model integration |
+| FastAPI | Backend API |
+| React | Frontend application |
+| Vite | Frontend development and build tooling |
+| RDKit | Molecular processing and descriptor calculation |
+| Machine Learning | EGFR potency estimation |
+| JavaScript | Frontend functionality |
+| 2D/3D visualization libraries | Molecular structure visualization |
+| Vercel | Frontend deployment |
+| Render | Backend deployment |
+| Git & GitHub | Version control |
 
-RDKit
+---
 
-Cheminformatics & molecular processing
+## 🏗️ System Architecture
 
-XGBoost
+```text
+             USER
+               |
+               v
+       REACT FRONTEND
+               |
+               v
+        FASTAPI BACKEND
+               |
+       +-------+--------+
+       |                |
+       v                v
+  RDKit Analysis   ML Prediction
+       |                |
+       v                v
+ Molecular          EGFR IC50
+ Descriptors        Estimation
+       |                |
+       +-------+--------+
+               |
+               v
+      Applicability Domain
+         & Uncertainty
+               |
+               v
+      Candidate Comparison
+               |
+               v
+       RESULTS & VISUALS
+```
 
-EGFR efficacy prediction
+---
 
-Scikit-learn
+## 🌐 Deployment
 
-Machine learning & preprocessing
+The application is deployed using separate frontend and backend services.
 
-Random Forest
+- **Frontend:** https://egfr-three.vercel.app
+- **Backend health endpoint:** https://egfr-bhla.onrender.com/health
 
-Toxicity prediction
+The frontend communicates with the FastAPI backend to request molecular analysis and model predictions.
 
-Pandas
+---
 
-Data processing
+## ⚙️ Local Development
 
-NumPy
+### 1. Clone the repository
 
-Numerical computation
+```bash
+git clone https://github.com/bhattsana/EGFR.git
+cd EGFR
+```
 
-Matplotlib / Plotly
+### 2. Backend setup
 
-Visualization
-
-Streamlit
-
-Interactive dashboard (if enabled)
-
-📂 Project Structure
-
-EGFR/
-│
-├── data/
-│   ├── raw/
-│   └── processed/
-│
-├── models/
-│   ├── efficacy_model/
-│   └── toxicity_model/
-│
-├── notebooks/
-│   └── experiments.ipynb
-│
-├── src/
-│   ├── preprocessing.py
-│   ├── fingerprints.py
-│   ├── efficacy.py
-│   ├── toxicity.py
-│   ├── ranking.py
-│   └── explainability.py
-│
-├── app/
-│   └── dashboard.py
-│
-├── requirements.txt
-├── README.md
-└── LICENSE
-
-The exact structure may vary depending on the implementation in the repository.
-
-⚙️ Installation
-
-1. Clone the repository
-
-git clone https://github.com/bhattsana/EGFR-.git
-cd EGFR-
-
-2. Create a virtual environment
+```bash
+cd EGFR/backend
 
 python -m venv venv
+```
 
-Activate it:
+Activate the environment on Windows:
 
-Windows
-
+```powershell
 venv\Scripts\activate
+```
 
-macOS/Linux
+Install the dependencies using the backend requirements file:
 
-source venv/bin/activate
-
-3. Install dependencies
-
+```bash
 pip install -r requirements.txt
+```
 
-If RDKit is not available through your environment, install it using the recommended Conda installation:
+Start the FastAPI development server:
 
-conda install -c conda-forge rdkit
+```bash
+uvicorn app.main:app --reload
+```
 
-▶️ Running the Project
+### 3. Frontend setup
 
-If the project includes a Streamlit dashboard:
+Open another terminal:
 
-streamlit run app/dashboard.py
+```bash
+cd EGFR/frontend
 
-For a Python pipeline:
+npm install
+npm run dev
+```
 
-python src/main.py
+The Vite development server will display its local URL in the terminal.
 
-Update the command according to the entry point present in the repository.
+**Note:** The commands above assume the repository retains the `EGFR/backend` and `EGFR/frontend` directory layout and the backend requirements file is named `requirements.txt`.
 
-📊 Example Workflow
+---
 
-Upload or provide a molecule in SMILES format.
+## ⚠️ Limitations and Disclaimer
 
-Validate and process the molecule using RDKit.
+This project is intended for educational and computational research purposes only.
 
-Generate its 2048-bit Morgan fingerprint.
+- Model predictions are exploratory estimates.
+- Predictions are not experimentally confirmed EGFR inhibition results.
+- Applicability-domain warnings indicate potential limitations in structural similarity to training compounds.
+- Empirical intervals are not clinical confidence intervals.
+- Structural similarity does not establish biological activity.
+- The platform is not intended for clinical decision-making, treatment recommendations or patient care.
 
-Predict EGFR efficacy using XGBoost.
+Experimental validation is required before drawing conclusions about biological activity, safety or therapeutic potential.
 
-Predict toxicity using Random Forest.
+---
 
-Calculate synthetic accessibility.
+## 🔮 Future Improvements
 
-Generate a composite candidate score.
+- Expand and diversify EGFR bioactivity datasets.
+- Integrate molecular docking and protein-ligand interaction analysis.
+- Explore ADMET and toxicity prediction.
+- Evaluate graph neural network architectures.
+- Improve model calibration and uncertainty estimation.
+- Expand external validation across molecular scaffolds.
+- Add experiment tracking and model versioning.
 
-Rank the molecule against other candidates.
+---
 
-Display interpretable results through the dashboard.
+## 👩‍💻 Author
 
-📌 Key Features
-
-✅ SMILES-based molecular screening
-
-✅ 2048-bit Morgan fingerprints
-
-✅ ML-based efficacy prediction
-
-✅ ML-based toxicity prediction
-
-✅ Synthetic accessibility assessment
-
-✅ Multi-factor compound ranking
-
-✅ Explainable predictions
-
-✅ Candidate comparison
-
-✅ Interactive visualization
-
-✅ Designed for early-stage computational drug discovery
-
-🧪 EGFR & NSCLC Context
-
-EGFR is a receptor tyrosine kinase that plays an important role in cell growth and signaling.
-
-Mutations and abnormal EGFR signaling are associated with several cancers, including subsets of NSCLC.
-
-Existing EGFR-targeted therapies include:
-
-Gefitinib
-
-Erlotinib
-
-Osimertinib
-
-However, acquired resistance and treatment-related toxicity can limit therapeutic effectiveness.
-
-This project explores how computational screening can help prioritize molecules for further experimental validation.
-
-⚠️ Important Disclaimer
-
-This project is intended for research and educational purposes.
-
-Predictions generated by machine-learning models should not be interpreted as clinical recommendations, medical advice, or proof of drug efficacy or safety.
-
-Computational predictions require experimental and clinical validation before any therapeutic conclusions can be made.
-
-🔮 Future Improvements
-
-Add larger and more diverse EGFR datasets
-
-Integrate molecular docking
-
-Add ADMET prediction
-
-Add graph neural networks (GNNs)
-
-Improve model calibration
-
-Add uncertainty estimation
-
-Integrate protein-ligand interaction analysis
-
-Add automated model comparison
-
-Deploy the screening dashboard
-
-Add experiment tracking and model versioning
-
-👩‍💻 Author
-
-Sana Bhatt
+**Sana Bhatt**
 
 GitHub: https://github.com/bhattsana
 
-⭐ Project Goal
+---
 
-Use AI and cheminformatics to reduce the search space in early-stage EGFR drug discovery and help researchers focus on the most promising candidate molecules.
+## ⭐ Project Goal
 
-If you find this project useful, consider giving the repository a ⭐.
+To explore how machine learning and cheminformatics can support early-stage EGFR molecular research by making molecular analysis, potency estimation and candidate comparison more accessible through an interactive web platform.
+
+If you find this project interesting, consider giving the repository a star!
