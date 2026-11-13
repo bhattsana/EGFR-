@@ -1,0 +1,20 @@
+# Local environment and secrets
+**/.env
+**/.env.*
+!**/.env.example
+
+# Generated frontend and Python files
+**/node_modules/
+**/dist/
+**/__pycache__/
+**/.venv/
+**/venv/
+**/.pytest_cache/
+*.py[cod]
+
+# Downloaded assay data and locally trained model artifacts
+/data/raw/
+/models/*.joblib
+/models/*.metrics.json
+/models/evaluation_runs/
+/models/applicability_domain/

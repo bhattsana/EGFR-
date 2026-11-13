@@ -1,0 +1,76 @@
+{
+  "endpoint": "human wild-type EGFR binding IC50",
+  "endpoint_id": "human_wild_type_EGFR_IC50",
+  "source": "ChEMBL",
+  "dataset_release": "ChEMBL_37",
+  "dataset_sha256": "97839dbdfef99cc9dd2ec7694b095b692356522ededc484a816f5cc8fa76d961",
+  "curation_manifest": "C:\\Users\\Sanar\\Downloads\\EGFR--main\\EGFR--main\\EGFR\\data\\raw\\chembl_egfr_wt_ic50_manifest.json",
+  "n_activity_records": 5502,
+  "n_unique_compounds": 4713,
+  "n_unique_scaffolds": 1872,
+  "split_counts": {
+    "train_compounds": 2704,
+    "validation_compounds": 572,
+    "calibration_compounds": 388,
+    "test_compounds": 1049,
+    "train_scaffolds": 1077,
+    "validation_scaffolds": 232,
+    "calibration_scaffolds": 188,
+    "test_scaffolds": 375
+  },
+  "validation_metrics": {
+    "random_forest": {
+      "mae_pIC50": 0.5312,
+      "rmse_pIC50": 0.7197,
+      "r2": 0.6256
+    },
+    "mean_baseline": {
+      "mae_pIC50": 0.9936,
+      "rmse_pIC50": 1.1781,
+      "r2": -0.0032
+    }
+  },
+  "test_metrics": {
+    "random_forest": {
+      "mae_pIC50": 0.6986,
+      "rmse_pIC50": 0.9081,
+      "r2": 0.5247
+    },
+    "mean_baseline": {
+      "mae_pIC50": 1.1438,
+      "rmse_pIC50": 1.3297,
+      "r2": -0.0189
+    },
+    "empirical_interval_90": {
+      "test_coverage": 0.8389,
+      "mean_width_pIC50": 2.5745
+    }
+  },
+  "model_eligible_for_inference": true,
+  "eligibility_rule": "Random Forest validation MAE must be lower than the training-mean baseline on a scaffold-disjoint validation partition.",
+  "model": {
+    "architecture": "RandomForestRegressor",
+    "fingerprint": "RDKit Morgan radius=2, 2048 bits",
+    "parameters": {
+      "n_estimators": 400,
+      "max_features": "sqrt",
+      "min_samples_leaf": 2,
+      "random_state": 42
+    }
+  },
+  "versions": {
+    "python": "3.11.0",
+    "numpy": "2.4.6",
+    "pandas": "3.1.1",
+    "scikit_learn": "1.9.1",
+    "rdkit": "2026.09.2"
+  },
+  "trained_at_utc": "2026-11-11T21:08:32.330992+00:00",
+  "limitations": [
+    "Assay-specific experimental conditions can still vary within binding assays.",
+    "The model predicts an in-vitro IC50-derived endpoint, not clinical efficacy.",
+    "The empirical interval is not a clinical confidence interval and is not guaranteed to cover out-of-domain compounds.",
+    "A scaffold split is more stringent than a random split but does not prove prospective generalization."
+  ],
+  "artifact_path": "C:\\Users\\Sanar\\Downloads\\EGFR--main\\EGFR--main\\EGFR\\models\\egfr_wt_ic50.joblib"
+}

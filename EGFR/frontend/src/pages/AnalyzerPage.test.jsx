@@ -3,15 +3,25 @@ import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import AnalyzerPage from "./AnalyzerPage";
 
-const { analyzeMolecule, getApiStatus } = vi.hoisted(() => ({
+const { analyzeMolecule, generate3DStructure, getApiStatus } = vi.hoisted(() => ({
   analyzeMolecule: vi.fn(),
+  generate3DStructure: vi.fn(),
   getApiStatus: vi.fn(),
 }));
 
 vi.mock("../lib/api", () => ({
   analyzeMolecule,
+  generate3DStructure,
   getApiStatus,
   getApiErrorMessage: () => "Could not reach the analysis service.",
+}));
+
+vi.mock("../components/Molecule3DCanvas", () => ({
+  default: ({ structure }) => (
+    <div data-testid="molecule-3d-canvas">
+      Rendered {structure.atoms.length} actual atoms
+    </div>
+  ),
 }));
 
 function renderAnalyzer() {
@@ -24,6 +34,8 @@ function renderAnalyzer() {
 
 describe("AnalyzerPage", () => {
   beforeEach(() => {
+    analyzeMolecule.mockReset();
+    generate3DStructure.mockReset();
     getApiStatus.mockResolvedValue({ prediction_model_available: false });
   });
 
@@ -74,6 +86,72 @@ describe("AnalyzerPage", () => {
     expect(screen.getByText("Model prediction unavailable")).toBeInTheDocument();
     expect(screen.queryByText("Predicted wild-type EGFR IC50")).not.toBeInTheDocument();
     expect(analyzeMolecule).toHaveBeenCalledWith("OCC");
+  });
+
+  it("requests and displays an RDKit conformer for the submitted SMILES", async () => {
+    analyzeMolecule.mockResolvedValue({
+      smiles: "CCO",
+      descriptors: {
+        molecular_weight_da: 46.069,
+        crippen_logp: -0.001,
+        tpsa_a2: 20.23,
+        h_bond_donors: 1,
+        h_bond_acceptors: 1,
+      },
+      depiction_png_base64: "cG5n",
+      prediction_model_available: false,
+      prediction: null,
+    });
+    generate3DStructure.mockResolvedValue({
+      smiles: "CCO",
+      atoms: Array.from({ length: 9 }, (_, index) => ({ index, element: "C" })),
+      bonds: Array.from({ length: 8 }, (_, index) => ({ begin: index, end: index + 1 })),
+      optimization: { force_field: "MMFF94", converged: true },
+    });
+    renderAnalyzer();
+    fireEvent.change(screen.getByLabelText(/smiles string/i), {
+      target: { value: "  OCC  " },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /analyze structure/i }));
+    await screen.findByText("Calculated molecular descriptors");
+    fireEvent.click(screen.getByRole("button", { name: "3D" }));
+
+    expect(await screen.findByTestId("molecule-3d-canvas")).toHaveTextContent(
+      "Rendered 9 actual atoms"
+    );
+    expect(generate3DStructure).toHaveBeenCalledWith("OCC");
+    expect(screen.getByText("MMFF94 geometry optimization converged. Coordinates are generated from the submitted SMILES; a conformer is not evidence of biological activity.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Reset 3D camera" })).toBeInTheDocument();
+  });
+
+  it("shows a clear error and keeps the 2D structure available when 3D generation fails", async () => {
+    analyzeMolecule.mockResolvedValue({
+      smiles: "CCO",
+      descriptors: {
+        molecular_weight_da: 46.069,
+        crippen_logp: -0.001,
+        tpsa_a2: 20.23,
+        h_bond_donors: 1,
+        h_bond_acceptors: 1,
+      },
+      depiction_png_base64: "cG5n",
+      prediction_model_available: false,
+      prediction: null,
+    });
+    generate3DStructure.mockRejectedValue(new Error("conformer unavailable"));
+    renderAnalyzer();
+    fireEvent.change(screen.getByLabelText(/smiles string/i), {
+      target: { value: "CCO" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /analyze structure/i }));
+    await screen.findByText("Calculated molecular descriptors");
+    fireEvent.click(screen.getByRole("button", { name: "3D" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Could not reach the analysis service."
+    );
+    fireEvent.click(screen.getByRole("button", { name: /return to the accurate 2d depiction/i }));
+    expect(screen.getByRole("img", { name: /2d depiction of CCO/i })).toBeInTheDocument();
   });
 
   it("clears the submitted structure and analysis", async () => {

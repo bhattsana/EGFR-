@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "domain_method_version": 1,
+  "reference_version": "egfr-wt-ic50-rf-97839dbdfef9-domain-v1",
+  "created_at_utc": "2026-11-12T00:38:16.239141+00:00",
+  "model_version": "egfr-wt-ic50-rf-97839dbdfef9",
+  "model_artifact_sha256": "1051cf0d851a4359d21defd6ce0d324983cf137761cf93c13559dee6f9dcade4",
+  "dataset_release": "ChEMBL_37",
+  "dataset_sha256": "97839dbdfef99cc9dd2ec7694b095b692356522ededc484a816f5cc8fa76d961",
+  "source_manifest_sha256": "478113f853d66f231499de47e20c4656bc2de1abaf70571d52e541c90f519c1c",
+  "split": {
+    "strategy": "Bemis-Murcko scaffold grouped",
+    "random_state": 42,
+    "training_compounds": 2704,
+    "training_scaffolds": 1077,
+    "calibration_compounds": 388,
+    "calibration_scaffolds": 188,
+    "validation_and_test_in_reference": false,
+    "training_calibration_canonical_compound_overlap": 0,
+    "training_calibration_scaffold_overlap": 0
+  },
+  "fingerprint": {
+    "type": "Morgan",
+    "radius": 2,
+    "size_bits": 2048,
+    "include_chirality": false,
+    "rdkit_version": "2026.09.2",
+    "generator": "rdFingerprintGenerator.GetMorganGenerator",
+    "settings": "RDKit defaults otherwise; same helper as model training",
+    "storage": "uint8 binary matrix in compressed NPZ"
+  },
+  "thresholds": {
+    "out_of_domain_below": 0.4,
+    "in_domain_at_or_above": 0.6025641025641025,
+    "out_of_domain_quantile": 0.1,
+    "in_domain_quantile": 0.25,
+    "quantile_method": "higher",
+    "selection_data": "training-model residuals and nearest similarities from calibration partition only",
+    "calibration_tier_residual_summary": {
+      "out_of_domain": {
+        "compound_count": 39,
+        "scaffold_count": 19,
+        "mean_absolute_error_pIC50": 0.9933091913723473,
+        "scaffold_bootstrap_95_percentile_interval_mae_pIC50": {
+          "lower_95": 0.6986574067206637,
+          "upper_95": 1.190564321920722
+        }
+      },
+      "borderline": {
+        "compound_count": 58,
+        "scaffold_count": 29,
+        "mean_absolute_error_pIC50": 0.8361627241386169,
+        "scaffold_bootstrap_95_percentile_interval_mae_pIC50": {
+          "lower_95": 0.6531450138750201,
+          "upper_95": 1.0285282274725145
+        }
+      },
+      "in_domain": {
+        "compound_count": 291,
+        "scaffold_count": 151,
+        "mean_absolute_error_pIC50": 0.43318168308395105,
+        "scaffold_bootstrap_95_percentile_interval_mae_pIC50": {
+          "lower_95": 0.3706002961855554,
+          "upper_95": 0.5112020661166438
+        }
+      }
+    }
+  },
+  "limitations": [
+    "Similarity tiers describe structural resemblance to the training set, not biological activity.",
+    "In-domain status does not guarantee prediction accuracy or prospective generalization.",
+    "Thresholds are relative to the calibration similarity distribution and are not clinical criteria.",
+    "Scaffold-group bootstrap summaries describe calibration error variability and do not alter model prediction intervals."
+  ],
+  "environment": {
+    "python": "3.11.0",
+    "numpy": "2.4.6",
+    "rdkit": "2026.09.2"
+  },
+  "arrays_file": "fingerprints.npz",
+  "arrays_sha256": "bedccaf76f7b369852a2cc367a38f67bd9928265b5b63d74b78823e813911828"
+}

@@ -1,8 +1,19 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { AlertCircle, ArrowRight, CheckCircle2, FlaskConical, RotateCcw } from "lucide-react";
 import { Link } from "react-router-dom";
 import ApplicabilityDomain from "../components/ApplicabilityDomain";
-import { analyzeMolecule, getApiErrorMessage, getApiStatus } from "../lib/api";
+import StructureViewer from "../components/StructureViewer";
+import {
+  analyzeMolecule,
+  generate3DStructure,
+  getApiErrorMessage,
+  getApiStatus,
+} from "../lib/api";
+
+const smilesExamples = [
+  { label: "Ethanol", smiles: "CCO" },
+  { label: "Benzene", smiles: "c1ccccc1" },
+];
 
 const descriptorFields = [
   { key: "molecular_weight_da", label: "Molecular weight", unit: "Da" },
@@ -19,13 +30,6 @@ function StructureResults({ result }) {
   return (
     <>
       <div className="structure-result-grid">
-        <div className="structure-preview">
-          <img
-            src={`data:image/png;base64,${result.depiction_png_base64}`}
-            alt={`2D depiction of ${result.smiles}`}
-          />
-          <span>2D structure generated from the submitted SMILES</span>
-        </div>
         <div className="descriptor-panel">
           <h3>Calculated molecular descriptors</h3>
           <dl className="descriptor-grid">
@@ -83,6 +87,12 @@ export default function AnalyzerPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [modelAvailable, setModelAvailable] = useState(null);
+  const [submittedSmiles, setSubmittedSmiles] = useState("");
+  const [conformer, setConformer] = useState(null);
+  const [isGenerating3D, setIsGenerating3D] = useState(false);
+  const [generationError, setGenerationError] = useState("");
+  const conformerRequest = useRef(0);
+  const analysisRequest = useRef(0);
 
   useEffect(() => {
     let active = true;
@@ -108,31 +118,65 @@ export default function AnalyzerPage() {
 
     setError("");
     setResult(null);
+    setSubmittedSmiles(normalizedSmiles);
+    setConformer(null);
+    setGenerationError("");
+    setIsGenerating3D(false);
+    conformerRequest.current += 1;
+    const requestId = analysisRequest.current + 1;
+    analysisRequest.current = requestId;
     setIsLoading(true);
     try {
-      setResult(await analyzeMolecule(normalizedSmiles));
+      const analysis = await analyzeMolecule(normalizedSmiles);
+      if (requestId === analysisRequest.current) setResult(analysis);
     } catch (requestError) {
-      setError(getApiErrorMessage(requestError));
+      if (requestId === analysisRequest.current) setError(getApiErrorMessage(requestError));
     } finally {
-      setIsLoading(false);
+      if (requestId === analysisRequest.current) setIsLoading(false);
     }
   }
 
   function clearForm() {
+    analysisRequest.current += 1;
+    conformerRequest.current += 1;
     setSmiles("");
     setError("");
     setResult(null);
+    setSubmittedSmiles("");
+    setConformer(null);
+    setIsLoading(false);
+    setIsGenerating3D(false);
+    setGenerationError("");
+  }
+
+  async function handleGenerate3D() {
+    if (!submittedSmiles || isGenerating3D) return;
+    const requestId = conformerRequest.current + 1;
+    conformerRequest.current = requestId;
+    setConformer(null);
+    setGenerationError("");
+    setIsGenerating3D(true);
+    try {
+      const generatedStructure = await generate3DStructure(submittedSmiles);
+      if (requestId === conformerRequest.current) setConformer(generatedStructure);
+    } catch (requestError) {
+      if (requestId === conformerRequest.current) {
+        setGenerationError(getApiErrorMessage(requestError));
+      }
+    } finally {
+      if (requestId === conformerRequest.current) setIsGenerating3D(false);
+    }
   }
 
   return (
-    <div className="page-wrap content-page">
+    <div className="page-wrap content-page analyzer-page">
       <div className="page-heading">
         <div>
           <div className="eyebrow"><span className="eyebrow-rule" /> ANALYSIS WORKSPACE</div>
           <h1>Molecule analyzer</h1>
           <p>Inspect a molecular structure, calculate descriptors, and review model output when available.</p>
         </div>
-        <span className={`status-pill ${modelAvailable ? "status-pill-success" : "status-pill-warning"}`}>
+        <span className={`status-pill ${modelAvailable === null ? "status-pill-muted" : modelAvailable ? "status-pill-success" : "status-pill-warning"}`}>
           <span className="status-dot" /> {modelAvailable === null ? "Checking model status" : modelAvailable ? "Model available" : "Model unavailable"}
         </span>
       </div>
@@ -165,6 +209,21 @@ export default function AnalyzerPage() {
               <span id="smiles-help">Whitespace around the input is ignored.</span>
               <span id="smiles-count">{smiles.length.toLocaleString()} / 10,000</span>
             </div>
+            <div className="smiles-examples" aria-label="SMILES examples">
+              <span>Structure examples · not EGFR candidate claims</span>
+              {smilesExamples.map((example) => (
+                <button
+                  type="button"
+                  className="example-chip"
+                  key={example.label}
+                  onClick={() => setSmiles(example.smiles)}
+                  disabled={isLoading}
+                  aria-label={`Use ${example.label} SMILES example`}
+                >
+                  {example.label}
+                </button>
+              ))}
+            </div>
             {error && <div id="smiles-error" className="notice notice-error" role="alert"><AlertCircle size={17} aria-hidden="true" /><span>{error}</span></div>}
             <div className="form-actions">
               <button className="button button-primary" type="submit" disabled={isLoading || !smiles.trim()}>
@@ -182,7 +241,16 @@ export default function AnalyzerPage() {
           </p>
         </section>
 
-        <aside className="panel status-panel" aria-labelledby="status-title">
+        <StructureViewer
+          result={result}
+          conformer={conformer}
+          isGenerating3D={isGenerating3D}
+          generationError={generationError}
+          onGenerate3D={handleGenerate3D}
+        />
+      </div>
+
+      <aside className="panel status-panel analyzer-status-panel" aria-labelledby="status-title">
           <div className="status-panel-mark"><AlertCircle size={19} aria-hidden="true" /></div>
           <div className="eyebrow"><span className="eyebrow-rule" /> SYSTEM STATUS</div>
           <h2 id="status-title">{modelAvailable ? "A research model is configured" : modelAvailable === null ? "Model status unavailable" : "Scoring is not enabled"}</h2>
@@ -191,11 +259,10 @@ export default function AnalyzerPage() {
             : "Structure validation and descriptors can still run. Model predictions remain unavailable until an eligible artifact is configured."}</p>
           <div className="status-list">
             <div><span className="status-list-icon status-ok"><CheckCircle2 size={15} /></span><span>Structure analysis</span><strong>Ready</strong></div>
-            <div><span className={`status-list-icon ${modelAvailable ? "status-ok" : "status-pending"}`}>{modelAvailable ? <CheckCircle2 size={15} /> : <AlertCircle size={15} />}</span><span>Model-based potency estimate</span><strong>{modelAvailable ? "Available" : "Unavailable"}</strong></div>
+            <div><span className={`status-list-icon ${modelAvailable ? "status-ok" : "status-pending"}`}>{modelAvailable ? <CheckCircle2 size={15} /> : <AlertCircle size={15} />}</span><span>Model-based potency estimate</span><strong>{modelAvailable === null ? "Checking" : modelAvailable ? "Available" : "Unavailable"}</strong></div>
           </div>
           <Link className="status-link" to="/ranking">About candidate ranking <ArrowRight size={14} aria-hidden="true" /></Link>
-        </aside>
-      </div>
+      </aside>
 
       {result && (
         <section className="results-section" aria-live="polite">

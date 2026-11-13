@@ -11,6 +11,11 @@ export async function analyzeMolecule(smiles) {
   return data;
 }
 
+export async function generate3DStructure(smiles) {
+  const { data } = await api.post("/structure/3d", { smiles });
+  return data;
+}
+
 export async function getApiStatus() {
   const { data } = await api.get("/health");
   return data;

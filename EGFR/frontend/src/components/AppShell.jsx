@@ -13,11 +13,11 @@ export default function AppShell({ children }) {
       <a className="skip-link" href="#main-content">Skip to content</a>
       <header className="app-header">
         <div className="header-inner">
-          <NavLink className="brand" to="/" aria-label="EGFR home">
+          <NavLink className="brand" to="/" aria-label="EGFR Molecular Universe home">
             <span className="brand-mark" aria-hidden="true"><Activity size={19} /></span>
             <span className="brand-copy">
               <span className="brand-name">EGFR<span className="brand-period">.</span></span>
-              <span className="brand-caption">MOLECULAR RESEARCH</span>
+              <span className="brand-caption">MOLECULAR UNIVERSE</span>
             </span>
           </NavLink>
           <nav className="primary-nav" aria-label="Main navigation">

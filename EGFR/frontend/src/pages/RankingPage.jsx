@@ -112,7 +112,7 @@ export default function RankingPage() {
           <h1>Candidate comparison</h1>
           <p>Analyze structures you provide and rank them only when eligible model outputs are available.</p>
         </div>
-        <span className={`status-pill ${modelAvailable ? "status-pill-success" : "status-pill-warning"}`}>
+        <span className={`status-pill ${modelAvailable === null ? "status-pill-muted" : modelAvailable ? "status-pill-success" : "status-pill-warning"}`}>
           <span className="status-dot" />
           {modelAvailable === null ? "Model status unavailable" : modelAvailable ? "Model available" : "No eligible model"}
         </span>
@@ -211,40 +211,103 @@ export default function RankingPage() {
               </p>
             </>
           )}
+          <div className="comparison-table-wrap" role="region" aria-label="Molecular comparison table" tabIndex={0}>
+            <table className="comparison-table">
+              <thead>
+                <tr>
+                  <th scope="col">Structure</th>
+                  <th scope="col">Predicted pIC50</th>
+                  <th scope="col">Empirical interval</th>
+                  <th scope="col">Applicability domain</th>
+                  <th scope="col">Molecular weight</th>
+                </tr>
+              </thead>
+              <tbody>
+                {displayedCandidates.map((candidate, index) => {
+                  const result = candidate.result;
+                  const prediction = result?.prediction;
+                  const domainStatus = prediction?.applicability_domain?.status?.replaceAll("_", " ");
+                  return (
+                    <tr key={`comparison-${candidate.inputSmiles}-${candidate.candidateNumber}`}>
+                      <th scope="row">
+                        <span className="table-candidate-rank">
+                          {prediction ? `#${index + 1}` : `Candidate ${candidate.candidateNumber}`}
+                        </span>
+                        <code>{result?.smiles || candidate.inputSmiles}</code>
+                      </th>
+                      <td>{prediction ? prediction.value.toFixed(2) : "Unavailable"}</td>
+                      <td>
+                        {prediction
+                          ? `${prediction.empirical_interval.lower.toFixed(2)}–${prediction.empirical_interval.upper.toFixed(2)} pIC50`
+                          : "Unavailable"}
+                      </td>
+                      <td>{domainStatus || "Unavailable"}</td>
+                      <td>{result ? `${result.descriptors.molecular_weight_da} Da` : "Unavailable"}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
           <ol className="candidate-list">
             {displayedCandidates.map((candidate, index) => (
               <li className="candidate-card" key={`${candidate.inputSmiles}-${candidate.candidateNumber}`}>
-                <div className="candidate-card-heading">
-                  <span className="candidate-rank">
-                    {candidate.result?.prediction ? `Rank ${index + 1}` : `Candidate ${candidate.candidateNumber}`}
-                  </span>
-                  {candidate.result?.prediction && <strong>{candidate.result.prediction.value.toFixed(2)} pIC50</strong>}
-                </div>
-                {candidate.error ? (
-                  <p className="candidate-error" role="alert">{candidate.error}</p>
-                ) : (
-                  <>
-                    <code className="candidate-smiles">{candidate.result.smiles}</code>
-                    {candidate.result.prediction ? (
-                      <>
-                        <p className="candidate-interval">
-                          Empirical interval: {candidate.result.prediction.empirical_interval.lower.toFixed(2)}–{candidate.result.prediction.empirical_interval.upper.toFixed(2)} pIC50
-                          <span>Model {candidate.result.prediction.model.version}</span>
-                        </p>
-                        <ApplicabilityDomain
-                          assessment={candidate.result.prediction.applicability_domain}
-                        />
-                      </>
+                <div className="candidate-card-layout">
+                  <div className="candidate-thumbnail">
+                    {candidate.result?.depiction_png_base64 ? (
+                      <img
+                        src={`data:image/png;base64,${candidate.result.depiction_png_base64}`}
+                        alt={`2D depiction of candidate ${candidate.candidateNumber}`}
+                      />
                     ) : (
-                      <p className="candidate-interval">Structure validated; no model prediction was generated.</p>
+                      <span>2D depiction unavailable</span>
                     )}
-                    <div className="candidate-descriptors">
-                      <span>MW {candidate.result.descriptors.molecular_weight_da} Da</span>
-                      <span>LogP {candidate.result.descriptors.crippen_logp}</span>
-                      <span>TPSA {candidate.result.descriptors.tpsa_a2} Å²</span>
+                  </div>
+                  <div className="candidate-card-content">
+                    <div className="candidate-card-heading">
+                      <span className="candidate-rank">
+                        {candidate.result?.prediction ? `Rank ${index + 1}` : `Candidate ${candidate.candidateNumber}`}
+                      </span>
+                      {candidate.result?.prediction && <strong>{candidate.result.prediction.value.toFixed(2)} pIC50</strong>}
                     </div>
-                  </>
-                )}
+                    {candidate.error ? (
+                      <p className="candidate-error" role="alert">{candidate.error}</p>
+                    ) : (
+                      <>
+                        <code className="candidate-smiles">{candidate.result.smiles}</code>
+                        {candidate.result.prediction ? (
+                          <>
+                            <p className="candidate-interval">
+                              Empirical interval: {candidate.result.prediction.empirical_interval.lower.toFixed(2)}–{candidate.result.prediction.empirical_interval.upper.toFixed(2)} pIC50
+                              <span>Model {candidate.result.prediction.model.version}</span>
+                            </p>
+                            <ApplicabilityDomain
+                              assessment={candidate.result.prediction.applicability_domain}
+                            />
+                          </>
+                        ) : (
+                          <p className="candidate-interval">Structure validated; no model prediction was generated.</p>
+                        )}
+                        <div className="candidate-descriptors">
+                          <span>MW {candidate.result.descriptors.molecular_weight_da} Da</span>
+                          <span>LogP {candidate.result.descriptors.crippen_logp}</span>
+                          <span>TPSA {candidate.result.descriptors.tpsa_a2} Å²</span>
+                        </div>
+                        <details className="candidate-structure-details">
+                          <summary>Expand 2D structure</summary>
+                          {candidate.result.depiction_png_base64 ? (
+                            <img
+                              src={`data:image/png;base64,${candidate.result.depiction_png_base64}`}
+                              alt={`Expanded 2D depiction of candidate ${candidate.candidateNumber}`}
+                            />
+                          ) : (
+                            <p>Structure depiction was not included in this API response.</p>
+                          )}
+                        </details>
+                      </>
+                    )}
+                  </div>
+                </div>
               </li>
             ))}
           </ol>
